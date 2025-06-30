@@ -19,10 +19,10 @@ import { Stack } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { convex } from '@/lib/convex'
+import { convex } from '@/lib/convex';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 const tokenCache = {
@@ -42,6 +42,7 @@ const tokenCache = {
   },
 };
 
+// Keep the splash screen visible until we're ready to render
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
@@ -75,7 +76,8 @@ function StatusBarWrapper() {
 
 export default function RootLayout() {
   useFrameworkReady();
-  const [loaded, error] = useFonts({
+  
+  const [fontsLoaded, fontError] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_700Bold,
@@ -85,16 +87,24 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    if (fontError) throw fontError;
+  }, [fontError]);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      // Only hide the splash screen once the fonts are loaded or if there's an error
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (fontsLoaded || fontError) {
+      onLayoutRootView();
     }
-  }, [loaded]);
+  }, [fontsLoaded, fontError, onLayoutRootView]);
 
-  if (!loaded) {
+  // Don't render anything until the fonts are loaded or there's an error
+  if (!fontsLoaded && !fontError) {
     return null;
   }
 
@@ -107,7 +117,7 @@ export default function RootLayout() {
         <ThemeProvider>
           <SafeAreaProvider>
             <StatusBarWrapper />
-            <GestureHandlerRootView style={{ flex: 1 }}>
+            <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
               <RootLayoutNav />
             </GestureHandlerRootView>
           </SafeAreaProvider>
