@@ -43,7 +43,6 @@ A mobile app for creating and completing side quests to make daily life more adv
 
 ### Key Features
 
-- Row Level Security (RLS) for data protection
 - Real-time subscriptions for live updates
 - Optimized queries with proper indexing
 - Community views for efficient data access
