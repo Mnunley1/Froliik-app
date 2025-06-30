@@ -22,7 +22,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { convex } from '@/lib/convex';
+import { convex } from '@/lib/convex'
+import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 const tokenCache = {
   async getToken(key: string) {
@@ -73,6 +74,7 @@ function StatusBarWrapper() {
 }
 
 export default function RootLayout() {
+  useFrameworkReady();
   const [loaded, error] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
